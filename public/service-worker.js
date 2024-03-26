@@ -3,6 +3,9 @@ const CACHE_VERSION = 1;
 const CURRENT_CACHE = `MainCache-${CACHE_VERSION}`;
 const indexedDBName = "OfflinePWA";
 const objectStoreName = "OfflinePostRequests";
+const BACKGROUND_PUT_REQ_TAG = "bg-put-request";
+const UPDATE_TASK_STATUS_TAG = "updateTaskStatus";
+const BACKGROUND_SYNC = "backgroundSync";
 
 // these are the routes we are going to cache for offline support
 const cacheFiles = [
@@ -165,6 +168,10 @@ function saveIntoIndexedDB(url, authHeader, payload) {
     objectStoreRequest.onsuccess = (event) => {
       console.log("Request saved to IndexedDB");
     };
+
+    navigator.serviceWorker.ready
+      .then((registration) => registration.sync.register(BACKGROUND_SYNC))
+      .catch((err) => console.log(`registrer sync fail`));
   };
 }
 
@@ -229,6 +236,12 @@ self.addEventListener("message", async (event) => {
     }
     console.log(jsonRes);
     await updateExistingCache(url, jsonRes);
+  }
+});
+
+self.addEventListener("sync", (event) => {
+  if (event.tag === BACKGROUND_SYNC) {
+    event.waitUntil(sendOfflinePostRequestsToServer());
   }
 });
 
