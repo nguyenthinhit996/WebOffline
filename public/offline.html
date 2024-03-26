@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+    <link rel="stylesheet" href="/assets/css/offline-style.css" />
+  </head>
+  <body>
+    <div class="wrapper">
+      <h1>OFFLINE</h1>
+      <h4>Please check your internet connection</h4>
+
+      <a href="." class="button">RETRY</a>
+      <!-- <button type="button">⤾ Reload</button> -->
+    </div>
+    <script>
+      // Manual reload feature.
+      document.querySelector("a").addEventListener("click", () => {
+        window.location.reload();
+      });
+
+      // Listen to changes in the network state, reload when online.
+      // This handles the case when the device is completely offline.
+      window.addEventListener("online", () => {
+        window.location.reload();
+      });
+
+      // Check if the server is responding and reload the page if it is.
+      // This handles the case when the device is online, but the server
+      // is offline or misbehaving.
+      async function checkNetworkAndReload() {
+        try {
+          const response = await fetch(".");
+          // Verify we get a valid response from the server
+          if (response.status >= 200 && response.status < 500) {
+            window.location.reload();
+            return;
+          }
+        } catch {
+          // Unable to connect to the server, ignore.
+        }
+        window.setTimeout(checkNetworkAndReload, 2500);
+      }
+
+      checkNetworkAndReload();
+    </script>
+  </body>
+</html>
